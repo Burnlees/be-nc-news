@@ -47,7 +47,6 @@ exports.selectCommentsByArticleId = (article_id) => {
       if (!res.rows.length) {
         return Promise.reject({ status: 404, msg: "Not Found" });
       }
-      console.log(res.rows);
       return res.rows;
     });
 };
