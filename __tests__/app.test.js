@@ -19,9 +19,6 @@ describe("Wrong path error handling", () => {
 });
 
 describe("GET /api/topics", () => {
-  it("should respond with a status code of 200 when successful", () => {
-    return request(app).get("/api/topics").expect(200);
-  });
   it("should respond with a status code of 200 when successful, and an array of topic objects - each with the properties - slug and description", () => {
     return request(app)
       .get("/api/topics")
@@ -39,9 +36,6 @@ describe("GET /api/topics", () => {
 });
 
 describe("GET /api", () => {
-  it("should respond with a status code of 200 when successful", () => {
-    return request(app).get("/api").expect(200);
-  });
   it("should respond with a status code of 200 when successful and an object containing information about the available endpoints", () => {
     return request(app)
       .get("/api")
@@ -60,9 +54,6 @@ describe("GET /api", () => {
 });
 
 describe("GET /api/articles/:article_id", () => {
-  it("should respond with a 200 status code when successful", () => {
-    return request(app).get("/api/articles/1").expect(200);
-  });
   it("should respond with a 200 status code, and an object of article data corrosponding to the selected article_id", () => {
     return request(app)
       .get("/api/articles/1")
@@ -99,10 +90,7 @@ describe("GET /api/articles/:article_id", () => {
 });
 
 describe("GET /api/articles", () => {
-  it("should respond with a 200 status code when successful", () => {
-    return request(app).get("/api/articles").expect(200);
-  });
-  it("should when successful respond with an array of all article objects without the body property present", () => {
+  it("should when successful respond with a 200 status code and an array of all article objects without the body property present", () => {
     return request(app)
       .get("/api/articles")
       .expect(200)
@@ -127,6 +115,50 @@ describe("GET /api/articles", () => {
       .expect(200)
       .then(({ body }) => {
         expect(body.articles).toBeSortedBy("created_at", { descending: true });
+      });
+  });
+});
+
+describe("GET /api/articles/:article_id/comments", () => {
+  it("should when successful respond with a 200 status code and an array of comments for the given article_id of which each comment should have the following properties: comment_id, votes, created_at, author, body, article_id", () => {
+    return request(app)
+      .get("/api/articles/1/comments")
+      .expect(200)
+      .then(({ body }) => {
+        body.comments.forEach((comment) => {
+          expect(comment).toMatchObject({
+            comment_id: expect.any(Number),
+            votes: expect.any(Number),
+            created_at: expect.any(String),
+            author: expect.any(String),
+            body: expect.any(String),
+            article_id: 1,
+          });
+        });
+      });
+  });
+  it("should responding with an array of comments, with the most recent comment first", () => {
+    return request(app)
+      .get("/api/articles/1/comments")
+      .expect(200)
+      .then(({ body }) => {
+        expect(body.comments).toBeSortedBy("created_at", { descending: true });
+      });
+  });
+  it("should respond with 404: Not Found when passed an article id that does not exist", () => {
+    return request(app)
+      .get("/api/articles/99999/comments")
+      .expect(404)
+      .then(({ body }) => {
+        expect(body.msg).toBe("Not Found");
+      });
+  });
+  it("should respond with 400: Bad Request when passed NaN as an article id", () => {
+    return request(app)
+      .get("/api/articles/banana/comments")
+      .expect(400)
+      .then(({ body }) => {
+        expect(body.msg).toBe("Bad Request");
       });
   });
 });
