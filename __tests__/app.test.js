@@ -58,3 +58,41 @@ describe("GET /api", () => {
       });
   });
 });
+
+describe("GET /api/articles/:article_id", () => {
+  it("should respond with a 200 status code when successful", () => {
+    return request(app).get("/api/articles/1").expect(200);
+  });
+  it("should respond with a 200 status code, and an object of article data corrosponding to the selected article_id", () => {
+    return request(app)
+      .get("/api/articles/1")
+      .expect(200)
+      .then(({ body }) => {
+        expect(body.article.article_id).toBe(1);
+        expect(body.article).toMatchObject({
+          title: expect.any(String),
+          topic: expect.any(String),
+          author: expect.any(String),
+          created_at: expect.any(String),
+          votes: expect.any(Number),
+          article_img_url: expect.any(String),
+        });
+      });
+  });
+  it("should respond with a 404: Not Found when passed an article_id that does not exist", () => {
+    return request(app)
+      .get("/api/articles/9999999")
+      .expect(404)
+      .then(({ body }) => {
+        expect(body.msg).toBe("Not Found, article id does not exist");
+      });
+  });
+  it("should respond with a 400: Bad Request when passed NaN as an article id", () => {
+    return request(app)
+      .get("/api/articles/banana")
+      .expect(400)
+      .then(({ body }) => {
+        expect(body.msg).toBe("Bad Request");
+      });
+  });
+});
