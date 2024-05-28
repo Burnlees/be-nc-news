@@ -1,4 +1,23 @@
 const db = require("../db/connection");
+const { removePropertyFromObjectArray } = require("../utils/utils");
+
+exports.selectArticles = () => {
+  return db
+    .query(
+      `
+      SELECT articles.*, CAST(COUNT(comments.article_id) AS INTEGER) AS comment_count
+      FROM articles
+      JOIN comments ON articles.article_id = comments.article_id
+      GROUP BY articles.article_id
+      ORDER BY articles.created_at DESC
+    `
+    )
+    .then((res) => {
+      const articleData = removePropertyFromObjectArray(res.rows, "body");
+
+      return articleData;
+    });
+};
 
 exports.selectArticleById = (article_id) => {
   return db
