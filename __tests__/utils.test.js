@@ -104,7 +104,7 @@ describe("formatComments", () => {
   });
 });
 
-describe.only("removePropertyFromObjectArray", () => {
+describe("removePropertyFromObjectArray", () => {
   it("should return an empty array when passed an empty array", () => {
     const input = [];
     const expected = [];
