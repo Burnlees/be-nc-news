@@ -6,19 +6,23 @@ const {
   handleServerErrors,
   handleCatchAll,
 } = require("./errors/errorHandlers");
-const { getEndpoints } = require("./controllers/api.controllers");
+const { getEndpoints, getUsers } = require("./controllers/api.controllers");
 const {
   getArticleById,
   getArticles,
   getCommentsByArticleId,
   patchArticleById,
 } = require("./controllers/articles.controllers");
-const { postCommentByArticleId, deleteCommentById } = require("./controllers/comments.controller");
+const {
+  postCommentByArticleId,
+  deleteCommentById,
+} = require("./controllers/comments.controller");
 
 const app = express();
 app.use(express.json());
 
 app.get("/api", getEndpoints);
+app.get("/api/users", getUsers);
 
 app.get("/api/topics", getTopics);
 
