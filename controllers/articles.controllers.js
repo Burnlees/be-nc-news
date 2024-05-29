@@ -24,8 +24,14 @@ exports.getArticleById = (req, res, next) => {
 
 exports.getCommentsByArticleId = (req, res, next) => {
   const { article_id } = req.params;
-  selectCommentsByArticleId(article_id)
-    .then((commentsData) => {
+  const promises = [
+    checkArticleExists(article_id),
+    selectCommentsByArticleId(article_id),
+  ];
+
+  Promise.all(promises)
+    .then((resolvedPromises) => {
+      const commentsData = resolvedPromises[1];
       res.status(200).send({ comments: commentsData });
     })
     .catch(next);
@@ -46,14 +52,4 @@ exports.patchArticleById = (req, res, next) => {
       res.status(200).send({ updatedArticle });
     })
     .catch(next);
-
-  const promises = [
-    checkArticleExists(article_id), selectCommentsByArticleId(article_id),
-  ];
-
-  Promise.all(promises).then((resolvedPromises) => {
-    const commentsData = resolvedPromises[1];
-    res.status(200).send({ comments: commentsData });
-  }).catch(next)
-
 };
