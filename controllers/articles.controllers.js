@@ -5,7 +5,7 @@ const {
   updateArticleById,
   checkArticleExists,
 } = require("../models/articles.models");
-const { checkTopicExists } = require("./topics.controllers");
+const { checkTopicExists } = require("../models/topics.models");
 
 exports.getArticles = (req, res, next) => {
   const { topic } = req.query;
