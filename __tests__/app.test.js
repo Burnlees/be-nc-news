@@ -89,8 +89,7 @@ describe("GET /api/articles", () => {
       .get("/api/articles")
       .expect(200)
       .then(({ body }) => {
-        console.log(body.articles);
-        expect(body.articles).toHaveLength(13)
+        expect(body.articles).toHaveLength(13);
         body.articles.forEach((article) => {
           expect(article).toMatchObject({
             article_id: expect.any(Number),
@@ -155,6 +154,56 @@ describe("GET /api/articles/:article_id/comments", () => {
       .expect(400)
       .then(({ body }) => {
         expect(body.msg).toBe("Bad Request: Invalid Input");
+      });
+  });
+});
+
+describe("POST /api/articles/:article_id/comments", () => {
+  it("should when successful respond with a 201 status code, it should create a new comment on corresponding article per the passed article id and respond with the newly created comment", () => {
+    const input = { username: "butter_bridge", body: "I agree!" };
+    return request(app)
+      .post("/api/articles/1/comments")
+      .send(input)
+      .expect(201)
+      .then(({ body }) => {
+        expect(body.comment).toMatchObject({
+          comment_id: expect.any(Number),
+          votes: expect.any(Number),
+          created_at: expect.any(String),
+          author: "butter_bridge",
+          body: "I agree!",
+          article_id: 1,
+        });
+      });
+  });
+  it("should when respond with a 404: Not Found when passed an article id that does not exist", () => {
+    const input = { username: "butter_bridge", body: "I agree!" };
+    return request(app)
+      .post("/api/articles/99999/comments")
+      .send(input)
+      .expect(404)
+      .then(({ body }) => {
+        expect(body.msg).toBe("Not Found");
+      });
+  });
+  it("should respond with a 400: Bad Request when passed NaN as article id", () => {
+    const input = { username: "butter_bridge", body: "I agree!" };
+    return request(app)
+      .post("/api/articles/banana/comments")
+      .send(input)
+      .expect(400)
+      .then(({ body }) => {
+        expect(body.msg).toBe("Bad Request: Invalid Input");
+      });
+  });
+  it("should respond with 400: Bad Request when post request body is missing a required field", () => {
+    const input = { body: "I agree!" };
+    return request(app)
+      .post("/api/articles/1/comments")
+      .send(input)
+      .expect(400)
+      .then(({ body }) => {
+        expect(body.msg).toBe("Bad Request: Missing Required Field");
       });
   });
 });

@@ -12,9 +12,6 @@ exports.handlePsqlErrors = (err, req, res, next) => {
     case "23502":
       res.status(400).send({ msg: "Bad Request: Missing Required Field" });
       break;
-    case "42601":
-      res.status(400).send({ msg: "Bad Request: Syntax Error" });
-      break;
     default:
       next(err);
       break;
