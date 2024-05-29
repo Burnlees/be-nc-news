@@ -5,9 +5,20 @@ exports.handleCustomErrors = (err, req, res, next) => {
 };
 
 exports.handlePsqlErrors = (err, req, res, next) => {
-  if (["22P02", "23502", "42601"].includes(err.code)) {
-    res.status(400).send({ msg: "Bad Request" });
-  } else next(err);
+  switch (err.code) {
+    case "22P02":
+      res.status(400).send({ msg: "Bad Request: Invalid Input" });
+      break;
+    case "23502":
+      res.status(400).send({ msg: "Bad Request: Missing Required Field" });
+      break;
+    case "42601":
+      res.status(400).send({ msg: "Bad Request: Syntax Error" });
+      break;
+    default:
+      next(err);
+      break;
+  }
 };
 
 exports.handleServerErrors = (err, req, res, next) => {
@@ -16,5 +27,5 @@ exports.handleServerErrors = (err, req, res, next) => {
 };
 
 exports.handleCatchAll = (req, res, next) => {
-    res.status(404).send({ msg: "Not Found" });
-  }
+  res.status(404).send({ msg: "Not Found" });
+};
