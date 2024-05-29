@@ -112,6 +112,33 @@ describe("GET /api/articles", () => {
         expect(body.articles).toBeSortedBy("created_at", { descending: true });
       });
   });
+  it("should respond with the articles filtered by topic when passed with the valid query", () => {
+    return request(app)
+      .get("/api/articles?topic=mitch")
+      .expect(200)
+      .then(({ body }) => {
+        expect(body.articles).toHaveLength(12);
+        body.articles.forEach((article) => {
+          expect(article.topic).toBe("mitch");
+        });
+      });
+  });
+  it("should respond with an empty array if passed a topic query with no articles related to it", () => {
+    return request(app)
+      .get("/api/articles?topic=paper")
+      .expect(200)
+      .then(({ body }) => {
+        expect(body.articles).toHaveLength(0);
+      });
+  });
+  it("should respond with 404: Not Found if passed with a topic that does not exist", () => {
+    return request(app)
+      .get("/api/articles?topic=banana")
+      .expect(404)
+      .then(({ body }) => {
+        expect(body.msg).toBe("Not Found");
+      });
+  });
 });
 
 describe("GET /api/articles/:article_id/comments", () => {

@@ -5,11 +5,20 @@ const {
   updateArticleById,
   checkArticleExists,
 } = require("../models/articles.models");
+const { checkTopicExists } = require("./topics.controllers");
 
 exports.getArticles = (req, res, next) => {
-  selectArticles().then((articlesData) => {
-    res.status(200).send({ articles: articlesData });
-  });
+  const { topic } = req.query;
+
+  const promises = [checkTopicExists(topic), selectArticles(topic)];
+
+  Promise.all(promises)
+    .then((resolvedPromises) => {
+      const articlesData = resolvedPromises[1];
+      res.status(200).send({ articles: articlesData });
+    })
+    .catch(next);
+
 };
 
 exports.getArticleById = (req, res, next) => {

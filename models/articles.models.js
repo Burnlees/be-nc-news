@@ -11,10 +11,9 @@ exports.checkArticleExists = (article_id) => {
     });
 };
 
-exports.selectArticles = () => {
-  return db
-    .query(
-      `
+exports.selectArticles = (filterByTopic) => {
+  const queryValues = [];
+  let sqlQuery = `
       SELECT
       articles.article_id, 
       articles.title, 
@@ -26,10 +25,20 @@ exports.selectArticles = () => {
       CAST(COUNT(comments.article_id) AS INTEGER) AS comment_count
       FROM articles
       LEFT JOIN comments ON articles.article_id = comments.article_id
+  `;
+
+  if (filterByTopic) {
+    sqlQuery += " WHERE topic = $1 ";
+    queryValues.push(filterByTopic);
+  }
+
+  sqlQuery += `
       GROUP BY articles.article_id
       ORDER BY articles.created_at DESC
-    `
-    )
+  `;
+
+  return db
+    .query(sqlQuery, queryValues)
     .then((res) => {
       return res.rows;
     });
