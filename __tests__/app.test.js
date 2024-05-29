@@ -278,7 +278,7 @@ describe("PATCH /api/articles/:article_id", () => {
         expect(body.msg).toBe("Not Found");
       });
   });
-  it('should respond with 400: Bad Request when passed NaN as article id', () => {
+  it("should respond with 400: Bad Request when passed NaN as article id", () => {
     const input = { inc_votes: -100 };
     return request(app)
       .patch("/api/articles/banana")
@@ -288,7 +288,7 @@ describe("PATCH /api/articles/:article_id", () => {
         expect(body.msg).toBe("Bad Request: Invalid Input");
       });
   });
-  it('should respond with 400: Bad Request when passed an invalid value type as patch request', () => {
+  it("should respond with 400: Bad Request when passed an invalid value type as patch request", () => {
     const input = { inc_votes: "banana" };
     return request(app)
       .patch("/api/articles/1")
@@ -298,14 +298,45 @@ describe("PATCH /api/articles/:article_id", () => {
         expect(body.msg).toBe("Bad Request: Invalid Input");
       });
   });
-  it('should respond with 400: Request when patch request is missing required field', () => {
-    const input = {  };
+  it("should respond with 400: Request when patch request is missing required field", () => {
+    const input = {};
     return request(app)
       .patch("/api/articles/1")
       .send(input)
       .expect(400)
       .then(({ body }) => {
         expect(body.msg).toBe("Bad Request: Missing Required Field");
+      });
+  });
+});
+
+describe("DELETE /api/comments/:comment_id", () => {
+  it("should when successful remove the selected comment and respond with a 204 status code with no content", () => {
+    return request(app)
+      .delete("/api/comments/1")
+      .expect(204)
+      .then(() => {
+        return db
+          .query(`SELECT * FROM comments WHERE comment_id = 1`)
+          .then((res) => {
+            expect(res.rows).toHaveLength(0);
+          });
+      });
+  });
+  it("should respond with 404: Not Found when passed a comment id that does not exist", () => {
+    return request(app)
+      .delete("/api/comments/99999")
+      .expect(404)
+      .then(({ body }) => {
+        expect(body.msg).toBe("Not Found");
+      });
+  });
+  it("should respond with 400: Bad Request when passed NaN as comment id", () => {
+    return request(app)
+      .delete("/api/comments/banana")
+      .expect(400)
+      .then(({ body }) => {
+        expect(body.msg).toBe("Bad Request: Invalid Input");
       });
   });
 });

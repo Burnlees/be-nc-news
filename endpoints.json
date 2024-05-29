@@ -105,5 +105,10 @@
         "article_img_url": "...example url"
       }
     }
+  },
+  "DELETE /api/comments/:comment_id": {
+    "description": "removes comment from the data table, corresponding to the passed comment id",
+    "queries": [],
+    "exampleResponse": {}
   }
 }
