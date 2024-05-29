@@ -65,6 +65,33 @@ describe("GET /api/articles/:article_id", () => {
         });
       });
   });
+  it("should per feature request now respond with an object that also includes a comment count property", () => {
+    return request(app)
+      .get("/api/articles/1")
+      .expect(200)
+      .then(({ body }) => {
+        expect(body.article.article_id).toBe(1);
+        expect(body.article).toMatchObject({
+          title: expect.any(String),
+          topic: expect.any(String),
+          author: expect.any(String),
+          body: expect.any(String),
+          created_at: expect.any(String),
+          votes: expect.any(Number),
+          article_img_url: expect.any(String),
+          comment_count: expect.any(Number),
+        });
+      });
+  });
+  it("should per feature request now respond with an object that also includes a comment count property of 0, when a article has no comments", () => {
+    return request(app)
+      .get("/api/articles/2")
+      .expect(200)
+      .then(({ body }) => {
+        expect(body.article.article_id).toBe(2);
+        expect(body.article.comment_count).toBe(0)
+      });
+  });
   it("should respond with a 404: Not Found when passed an article_id that does not exist", () => {
     return request(app)
       .get("/api/articles/9999999")

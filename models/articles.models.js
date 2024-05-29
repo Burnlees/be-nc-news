@@ -46,7 +46,16 @@ exports.selectArticles = (filterByTopic) => {
 
 exports.selectArticleById = (article_id) => {
   return db
-    .query(`SELECT * FROM articles WHERE article_id = $1`, [article_id])
+    .query(`
+    SELECT a.*, COALESCE(c.comment_count, 0) AS comment_count
+    FROM articles a
+    LEFT JOIN (
+    SELECT article_id, COUNT(*)::int AS comment_count
+    FROM comments
+    GROUP BY article_id) 
+    c ON a.article_id = c.article_id
+    WHERE a.article_id = $1;
+    `, [article_id])
     .then((res) => {
       if (!res.rows.length) {
         return Promise.reject({
