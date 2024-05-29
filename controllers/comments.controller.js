@@ -12,7 +12,6 @@ exports.postCommentByArticleId = (req, res, next) => {
 
   Promise.all(promises)
     .then((resolvedPromises) => {
-      console.log(resolvedPromises[0], "<< controller");
       const commentData = resolvedPromises[1];
       res.status(201).send({ comment: commentData });
     })
