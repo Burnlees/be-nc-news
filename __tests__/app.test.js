@@ -3,6 +3,7 @@ const app = require("../app");
 const db = require("../db/connection");
 const seed = require("../db/seeds/seed");
 const testData = require("../db/data/test-data/index");
+const endpointsDocs = require("../endpoints.json");
 
 beforeEach(() => seed(testData));
 afterAll(() => db.end());
@@ -41,14 +42,7 @@ describe("GET /api", () => {
       .get("/api")
       .expect(200)
       .then(({ body }) => {
-        expect(typeof body.endpoints).toBe("object");
-        for (endpoint of Object.keys(body.endpoints)) {
-          expect(body.endpoints[endpoint]).toMatchObject({
-            description: expect.any(String),
-            queries: expect.any(Array),
-            exampleResponse: expect.any(Object),
-          });
-        }
+        expect(body.endpoints).toEqual(endpointsDocs);
       });
   });
 });
@@ -84,17 +78,19 @@ describe("GET /api/articles/:article_id", () => {
       .get("/api/articles/banana")
       .expect(400)
       .then(({ body }) => {
-        expect(body.msg).toBe("Bad Request");
+        expect(body.msg).toBe("Bad Request: Invalid Input");
       });
   });
 });
 
 describe("GET /api/articles", () => {
-  it("should when successful respond with a 200 status code and an array of all article objects without the body property present", () => {
+  it("should when successful respond with a 200 status code and an array of all article objects without the body property present and and a comment_count column", () => {
     return request(app)
       .get("/api/articles")
       .expect(200)
       .then(({ body }) => {
+        console.log(body.articles);
+        expect(body.articles).toHaveLength(13)
         body.articles.forEach((article) => {
           expect(article).toMatchObject({
             article_id: expect.any(Number),
@@ -158,7 +154,7 @@ describe("GET /api/articles/:article_id/comments", () => {
       .get("/api/articles/banana/comments")
       .expect(400)
       .then(({ body }) => {
-        expect(body.msg).toBe("Bad Request");
+        expect(body.msg).toBe("Bad Request: Invalid Input");
       });
   });
 });
