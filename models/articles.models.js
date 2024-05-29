@@ -63,3 +63,19 @@ exports.selectCommentsByArticleId = (article_id) => {
       return res.rows;
     });
 };
+
+exports.updateArticleById = (article_id, votes) => {
+  return db
+    .query(
+      `
+    UPDATE articles
+    SET votes = votes + $1
+    WHERE article_id = $2
+    RETURNING *
+    `,
+      [votes, article_id]
+    )
+    .then((res) => {
+      return res.rows[0];
+    });
+};
