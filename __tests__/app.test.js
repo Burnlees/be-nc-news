@@ -207,3 +207,86 @@ describe("POST /api/articles/:article_id/comments", () => {
       });
   });
 });
+
+describe("PATCH /api/articles/:article_id", () => {
+  it("should when successful respond with a status code of 200 and the updated article, where the votes data is incremented", () => {
+    const input = { inc_votes: 1 };
+    return request(app)
+      .patch("/api/articles/1")
+      .send(input)
+      .expect(200)
+      .then(({ body }) => {
+        expect(body.updatedArticle).toEqual({
+          article_id: 1,
+          title: "Living in the shadow of a great man",
+          topic: "mitch",
+          author: "butter_bridge",
+          body: "I find this existence challenging",
+          created_at: "2020-07-09T20:11:00.000Z",
+          votes: 101,
+          article_img_url:
+            "https://images.pexels.com/photos/158651/news-newsletter-newspaper-information-158651.jpeg?w=700&h=700",
+        });
+      });
+  });
+  it("should when successful respond with a status code of 200 and the updated article, where the votes data is decremented", () => {
+    const input = { inc_votes: -100 };
+    return request(app)
+      .patch("/api/articles/1")
+      .send(input)
+      .expect(200)
+      .then(({ body }) => {
+        expect(body.updatedArticle).toEqual({
+          article_id: 1,
+          title: "Living in the shadow of a great man",
+          topic: "mitch",
+          author: "butter_bridge",
+          body: "I find this existence challenging",
+          created_at: "2020-07-09T20:11:00.000Z",
+          votes: 0,
+          article_img_url:
+            "https://images.pexels.com/photos/158651/news-newsletter-newspaper-information-158651.jpeg?w=700&h=700",
+        });
+      });
+  });
+  it("should respond with 404: Not Found when passed an article id that does not exist", () => {
+    const input = { inc_votes: -100 };
+    return request(app)
+      .patch("/api/articles/9999")
+      .send(input)
+      .expect(404)
+      .then(({ body }) => {
+        expect(body.msg).toBe("Not Found");
+      });
+  });
+  it('should respond with 400: Bad Request when passed NaN as article id', () => {
+    const input = { inc_votes: -100 };
+    return request(app)
+      .patch("/api/articles/banana")
+      .send(input)
+      .expect(400)
+      .then(({ body }) => {
+        expect(body.msg).toBe("Bad Request: Invalid Input");
+      });
+  });
+  it('should respond with 400: Bad Request when passed an invalid value type as patch request', () => {
+    const input = { inc_votes: "banana" };
+    return request(app)
+      .patch("/api/articles/1")
+      .send(input)
+      .expect(400)
+      .then(({ body }) => {
+        expect(body.msg).toBe("Bad Request: Invalid Input");
+      });
+  });
+  it('should respond with 400: Request when patch request is missing required field', () => {
+    const input = {  };
+    return request(app)
+      .patch("/api/articles/1")
+      .send(input)
+      .expect(400)
+      .then(({ body }) => {
+        expect(body.msg).toBe("Bad Request: Missing Required Field");
+      });
+  });
+});

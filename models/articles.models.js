@@ -2,12 +2,14 @@ const db = require("../db/connection");
 const { removePropertyFromObjectArray } = require("../utils/utils");
 
 exports.checkArticleExists = (article_id) => {
-  return db.query(`SELECT * FROM articles WHERE article_id = $1`, [article_id]).then((res) => {
-    if(!res.rows.length) {
-      return Promise.reject({status: 404, msg: 'Not Found'})
-    }
-  })
-}
+  return db
+    .query(`SELECT * FROM articles WHERE article_id = $1`, [article_id])
+    .then((res) => {
+      if (!res.rows.length) {
+        return Promise.reject({ status: 404, msg: "Not Found" });
+      }
+    });
+};
 
 exports.selectArticles = () => {
   return db
@@ -62,5 +64,21 @@ exports.selectCommentsByArticleId = (article_id) => {
         return Promise.reject({ status: 404, msg: "Not Found" });
       }
       return res.rows;
+    });
+};
+
+exports.updateArticleById = (article_id, votes) => {
+  return db
+    .query(
+      `
+    UPDATE articles
+    SET votes = votes + $1
+    WHERE article_id = $2
+    RETURNING *
+    `,
+      [votes, article_id]
+    )
+    .then((res) => {
+      return res.rows[0];
     });
 };
