@@ -75,5 +75,19 @@
         }
       ]
     }
+  },
+  "POST /api/articles/:article_id/comments": {
+    "description": "posts a new comment to the comments data table, responds with the newly created comment",
+    "queries": [],
+    "exampleResponse": {
+      "comment": {
+        "comment_id": 9,
+        "body": "...example text",
+        "article_id": 1,
+        "author": "...example text",
+        "votes": 0,
+        "created_at": "2020-01-01T03:08:00.000Z"
+      }
+    }
   }
 }
