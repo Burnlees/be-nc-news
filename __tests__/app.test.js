@@ -120,6 +120,7 @@ describe("GET /api/articles/:article_id/comments", () => {
       .get("/api/articles/1/comments")
       .expect(200)
       .then(({ body }) => {
+        expect(body.comments).toHaveLength(11);
         body.comments.forEach((comment) => {
           expect(comment).toMatchObject({
             comment_id: expect.any(Number),
@@ -132,9 +133,17 @@ describe("GET /api/articles/:article_id/comments", () => {
         });
       });
   });
+  it("should respond with an empty array of comments, when passed the article id for an article with no comments", () => {
+    return request(app)
+      .get("/api/articles/2/comments")
+      .expect(200)
+      .then(({ body }) => {
+        expect(body.comments).toHaveLength(0);
+      });
+  });
   it("should responding with an array of comments, with the most recent comment first", () => {
     return request(app)
-      .get("/api/articles/1/comments")
+      .get("/api/articles/2/comments")
       .expect(200)
       .then(({ body }) => {
         expect(body.comments).toBeSortedBy("created_at", { descending: true });
@@ -184,6 +193,16 @@ describe("POST /api/articles/:article_id/comments", () => {
       .expect(404)
       .then(({ body }) => {
         expect(body.msg).toBe("Not Found");
+      });
+  });
+  it("should when respond with a 404: Not Found when passed an user that does not exist", () => {
+    const input = { username: "bob", body: "I disagree!" };
+    return request(app)
+      .post("/api/articles/1/comments")
+      .send(input)
+      .expect(404)
+      .then(({ body }) => {
+        expect(body.msg).toBe("Not Found: user doesn't exist");
       });
   });
   it("should respond with a 400: Bad Request when passed NaN as article id", () => {

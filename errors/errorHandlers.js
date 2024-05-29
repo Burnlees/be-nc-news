@@ -12,6 +12,9 @@ exports.handlePsqlErrors = (err, req, res, next) => {
     case "23502":
       res.status(400).send({ msg: "Bad Request: Missing Required Field" });
       break;
+    case '23503':
+      res.status(404).send({ msg: "Not Found: user doesn't exist" });
+      break;
     default:
       next(err);
       break;

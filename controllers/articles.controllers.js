@@ -46,4 +46,14 @@ exports.patchArticleById = (req, res, next) => {
       res.status(200).send({ updatedArticle });
     })
     .catch(next);
+
+  const promises = [
+    checkArticleExists(article_id), selectCommentsByArticleId(article_id),
+  ];
+
+  Promise.all(promises).then((resolvedPromises) => {
+    const commentsData = resolvedPromises[1];
+    res.status(200).send({ comments: commentsData });
+  }).catch(next)
+
 };
