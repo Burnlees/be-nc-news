@@ -41,6 +41,8 @@
 
 - This API was built using Postgres 14.11 and Node 21.6.2, I suggest you use the same versions or higher.
 
+---
+
 - **Hosted Version:** https://burnlees-news.onrender.com/api/
 
 ---
