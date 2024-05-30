@@ -1,4 +1,8 @@
-const { selectEndpointsData, selectUsers } = require("../models/api.models");
+const {
+  selectEndpointsData,
+  selectUsers,
+  selectUserByUsername,
+} = require("../models/api.models");
 
 exports.getEndpoints = (req, res, next) => {
   selectEndpointsData().then((endpointData) => {
@@ -11,4 +15,11 @@ exports.getUsers = (req, res, next) => {
   selectUsers().then((usersData) => {
     res.status(200).send({ users: usersData });
   });
+};
+
+exports.getUserByUsername = (req, res, next) => {
+  const { username } = req.params;
+  selectUserByUsername(username).then((userData) => {
+    res.status(200).send({user: userData})
+  }).catch(next)
 };

@@ -197,7 +197,7 @@ describe("GET /api/articles", () => {
       .get("/api/articles?sort_by=banana")
       .expect(400)
       .then(({ body }) => {
-        expect(body.msg).toBe('Bad Request: Invalid Query')
+        expect(body.msg).toBe("Bad Request: Invalid Query");
       });
   });
   it("should respond with 400: Bad Request when passed an invalid order query", () => {
@@ -205,7 +205,7 @@ describe("GET /api/articles", () => {
       .get("/api/articles?sort_by=article_id&order=up")
       .expect(400)
       .then(({ body }) => {
-        expect(body.msg).toBe('Bad Request: Invalid Query')
+        expect(body.msg).toBe("Bad Request: Invalid Query");
       });
   });
   it("should respond with 404: Not Found if passed with a topic that does not exist", () => {
@@ -483,6 +483,30 @@ describe("GET api/users", () => {
             avatar_url: expect.any(String),
           });
         });
+      });
+  });
+});
+
+describe("GET /api/users/:username", () => {
+  it("should when successful respond with a 200 status code and a user object corresponding to the passed username", () => {
+    return request(app)
+      .get("/api/users/butter_bridge")
+      .expect(200)
+      .then(({ body }) => {
+        expect(body.user).toEqual({
+          username: "butter_bridge",
+          name: "jonny",
+          avatar_url:
+            "https://www.healthytherapies.com/wp-content/uploads/2016/06/Lime3.jpg",
+        });
+      });
+  });
+  it('should respond with 404: Not Found when passed a username that does not exist', () => {
+    return request(app)
+      .get("/api/users/bob")
+      .expect(404)
+      .then(({ body }) => {
+       expect(body.msg).toBe('Not Found')
       });
   });
 });
