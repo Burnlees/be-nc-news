@@ -158,6 +158,56 @@ describe("GET /api/articles", () => {
         expect(body.articles).toHaveLength(0);
       });
   });
+  it("should when passed with no sort_by query, provide a response sorted by the default of created_at in descending order", () => {
+    return request(app)
+      .get("/api/articles")
+      .expect(200)
+      .then(({ body }) => {
+        expect(body.articles).toBeSortedBy("created_at", { descending: true });
+      });
+  });
+  it("should when passed with no sort_by query and an order query of asc, provide a response sorted by the default of created_at in ascending order", () => {
+    return request(app)
+      .get("/api/articles?order=asc")
+      .expect(200)
+      .then(({ body }) => {
+        expect(body.articles).toBeSortedBy("created_at", { ascending: true });
+      });
+  });
+  it("should when passed with a valid sort_by query and no order query, provide a response sorted by given query in descending order", () => {
+    return request(app)
+      .get("/api/articles?sort_by=article_id")
+      .expect(200)
+      .then(({ body }) => {
+        expect(body.articles).toBeSortedBy("article_id", { descending: true });
+      });
+  });
+  it("should when passed with a different valid sort_by query and an order query of asc, provide a response sorted by given query in ascending order", () => {
+    return request(app)
+      .get("/api/articles?sort_by=comment_count&order=asc")
+      .expect(200)
+      .then(({ body }) => {
+        expect(body.articles).toBeSortedBy("comment_count", {
+          ascending: true,
+        });
+      });
+  });
+  it("should respond with 400: Bad Request when passed an invalid sort query", () => {
+    return request(app)
+      .get("/api/articles?sort_by=banana")
+      .expect(400)
+      .then(({ body }) => {
+        expect(body.msg).toBe('Bad Request: Invalid Query')
+      });
+  });
+  it("should respond with 400: Bad Request when passed an invalid order query", () => {
+    return request(app)
+      .get("/api/articles?sort_by=article_id&order=up")
+      .expect(400)
+      .then(({ body }) => {
+        expect(body.msg).toBe('Bad Request: Invalid Query')
+      });
+  });
   it("should respond with 404: Not Found if passed with a topic that does not exist", () => {
     return request(app)
       .get("/api/articles?topic=banana")
