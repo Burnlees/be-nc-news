@@ -89,7 +89,7 @@ describe("GET /api/articles/:article_id", () => {
       .expect(200)
       .then(({ body }) => {
         expect(body.article.article_id).toBe(2);
-        expect(body.article.comment_count).toBe(0)
+        expect(body.article.comment_count).toBe(0);
       });
   });
   it("should respond with a 404: Not Found when passed an article_id that does not exist", () => {
@@ -304,6 +304,30 @@ describe("PATCH /api/articles/:article_id", () => {
   });
   it("should when successful respond with a status code of 200 and the updated article, where the votes data is decremented", () => {
     const input = { inc_votes: -100 };
+    return request(app)
+      .patch("/api/articles/1")
+      .send(input)
+      .expect(200)
+      .then(({ body }) => {
+        expect(body.updatedArticle).toEqual({
+          article_id: 1,
+          title: "Living in the shadow of a great man",
+          topic: "mitch",
+          author: "butter_bridge",
+          body: "I find this existence challenging",
+          created_at: "2020-07-09T20:11:00.000Z",
+          votes: 0,
+          article_img_url:
+            "https://images.pexels.com/photos/158651/news-newsletter-newspaper-information-158651.jpeg?w=700&h=700",
+        });
+      });
+  });
+  it("should when passed additional properties on  the patch request body, only update the required ones", () => {
+    const input = {
+      inc_votes: -100,
+      topic: "paper",
+      created_at: "2020-08-09T21:11:00.000Z",
+    };
     return request(app)
       .patch("/api/articles/1")
       .send(input)
