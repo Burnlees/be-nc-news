@@ -501,12 +501,96 @@ describe("GET /api/users/:username", () => {
         });
       });
   });
-  it('should respond with 404: Not Found when passed a username that does not exist', () => {
+  it("should respond with 404: Not Found when passed a username that does not exist", () => {
     return request(app)
       .get("/api/users/bob")
       .expect(404)
       .then(({ body }) => {
-       expect(body.msg).toBe('Not Found')
+        expect(body.msg).toBe("Not Found");
+      });
+  });
+});
+
+describe("PATCH /api/comments/:comment_id", () => {
+  it("should when successful respond with a 200 and the updated comment object when vote is incremented", () => {
+    const input = { inc_votes: 1 };
+    return request(app)
+      .patch("/api/comments/1")
+      .send(input)
+      .expect(200)
+      .then(({ body }) => {
+        expect(body.comment).toEqual({
+          comment_id: 1,
+          body: "Oh, I've got compassion running out of my nose, pal! I'm the Sultan of Sentiment!",
+          votes: 17,
+          author: "butter_bridge",
+          article_id: 9,
+          created_at: "2020-04-06T12:17:00.000Z",
+        });
+      });
+  });
+  it("should when successful respond with a 200 and the updated comment object when vote is decremented", () => {
+    const input = { inc_votes: -3 };
+    return request(app)
+      .patch("/api/comments/1")
+      .send(input)
+      .expect(200)
+      .then(({ body }) => {
+        expect(body.comment).toEqual({
+          comment_id: 1,
+          body: "Oh, I've got compassion running out of my nose, pal! I'm the Sultan of Sentiment!",
+          votes: 13,
+          author: "butter_bridge",
+          article_id: 9,
+          created_at: "2020-04-06T12:17:00.000Z",
+        });
+      });
+  });
+  it("should respond with a 404: Not Found when passed the id for a comment that doesnt exist", () => {
+    const input = { inc_votes: -3 };
+    return request(app)
+      .patch("/api/comments/999999")
+      .send(input)
+      .expect(404)
+      .then(({ body }) => {
+        expect(body.msg).toBe("Not Found");
+      });
+  });
+  it("should respond with 400: Bad Request when passed NaN as comment id", () => {
+    const input = { inc_votes: -3 };
+    return request(app)
+      .patch("/api/comments/banana")
+      .send(input)
+      .expect(400)
+      .then(({ body }) => {
+        expect(body.msg).toBe("Bad Request: Invalid Input");
+      });
+  });
+  it("should respond with 400: Bad Request when passed a patch request missing the required fields", () => {
+    const input = {};
+    return request(app)
+      .patch("/api/comments/1")
+      .send(input)
+      .expect(400)
+      .then(({ body }) => {
+        expect(body.msg).toBe("Bad Request: Missing Required Field");
+      });
+  });
+  it("should when passed with a patch request containing extra properties, only update the required fields", () => {
+    const input = { inc_votes: -3, author: "bob" };
+    return request(app)
+      .patch("/api/comments/1")
+      .send(input)
+      .expect(200)
+      .then(({ body }) => {
+        expect(body.comment).toEqual({
+          comment_id: 1,
+          body: "Oh, I've got compassion running out of my nose, pal! I'm the Sultan of Sentiment!",
+          votes: 13,
+          author: "butter_bridge",
+          article_id: 9,
+          created_at: "2020-04-06T12:17:00.000Z",
+        });
       });
   });
 });
