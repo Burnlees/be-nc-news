@@ -7,6 +7,7 @@ exports.getEndpoints = (req, res, next) => {
 };
 
 exports.getUsers = (req, res, next) => {
+  // console.log('hello from controller');
   selectUsers().then((usersData) => {
     res.status(200).send({ users: usersData });
   });
