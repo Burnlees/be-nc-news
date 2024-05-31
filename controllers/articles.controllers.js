@@ -4,13 +4,17 @@ const {
   selectCommentsByArticleId,
   updateArticleById,
   checkArticleExists,
+  createArticle,
 } = require("../models/articles.models");
 const { checkTopicExists } = require("../models/topics.models");
 
 exports.getArticles = (req, res, next) => {
   const { topic, order, sort_by } = req.query;
 
-  const promises = [checkTopicExists(topic), selectArticles(topic, order, sort_by)];
+  const promises = [
+    checkTopicExists(topic),
+    selectArticles(topic, order, sort_by),
+  ];
 
   Promise.all(promises)
     .then((resolvedPromises) => {
@@ -18,7 +22,6 @@ exports.getArticles = (req, res, next) => {
       res.status(200).send({ articles: articlesData });
     })
     .catch(next);
-
 };
 
 exports.getArticleById = (req, res, next) => {
@@ -59,6 +62,22 @@ exports.patchArticleById = (req, res, next) => {
     .then((resolvedPromises) => {
       const updatedArticle = resolvedPromises[1];
       res.status(200).send({ updatedArticle });
+    })
+    .catch(next);
+};
+
+exports.postArticle = (req, res, next) => {
+  const newArticle = req.body;
+
+  const promises = [
+    checkTopicExists(newArticle.topic),
+    createArticle(newArticle),
+  ];
+
+  Promise.all(promises)
+    .then((resolvedPromises) => {
+      const newArticleData = resolvedPromises[1];
+      res.status(201).send({ article: newArticleData });
     })
     .catch(next);
 };
