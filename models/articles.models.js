@@ -89,10 +89,9 @@ exports.selectArticles = (
     db.query(countQuery, countQueryValues),
     db.query(sqlQuery, queryValues),
   ]).then(([countResult, articlesResult]) => {
-
     const total_Count = parseInt(countResult.rows[0].count, 10);
     const totalPages = Math.ceil(total_Count / limit);
-    
+
     if (page > totalPages && total_Count !== 0) {
       return Promise.reject({ status: 404, msg: "Not Found" });
     }
@@ -130,19 +129,25 @@ exports.selectArticleById = (article_id) => {
     });
 };
 
-exports.selectCommentsByArticleId = (article_id) => {
-  return db
-    .query(
-      `
-    SELECT * FROM comments 
-    WHERE article_id = $1
-    ORDER BY created_at DESC
-    `,
-      [article_id]
-    )
-    .then((res) => {
-      return res.rows;
-    });
+exports.selectCommentsByArticleId = (article_id, limit = 10, page = 1) => {
+  const queryValues = [article_id];
+
+  let sqlQuery = `
+  SELECT * FROM comments 
+  WHERE article_id = $1
+  ORDER BY created_at DESC
+  `;
+
+  const offset = (page - 1) * limit;
+  queryValues.push(limit, offset);
+
+  sqlQuery += ` LIMIT $${queryValues.length - 1} OFFSET $${
+    queryValues.length
+  } `;
+
+  return db.query(sqlQuery, queryValues).then((res) => {
+    return res.rows;
+  });
 };
 
 exports.updateArticleById = (article_id, votes) => {
