@@ -9,17 +9,17 @@ const {
 const { checkTopicExists } = require("../models/topics.models");
 
 exports.getArticles = (req, res, next) => {
-  const { topic, order, sort_by } = req.query;
+  const { topic, order, sort_by, limit, p } = req.query;
 
   const promises = [
     checkTopicExists(topic),
-    selectArticles(topic, order, sort_by),
+    selectArticles(topic, order, sort_by, limit, p),
   ];
 
   Promise.all(promises)
     .then((resolvedPromises) => {
       const articlesData = resolvedPromises[1];
-      res.status(200).send({ articles: articlesData });
+      res.status(200).send(articlesData);
     })
     .catch(next);
 };

@@ -14,7 +14,13 @@ exports.checkArticleExists = (article_id) => {
     });
 };
 
-exports.selectArticles = (filterByTopic, order, sort_by) => {
+exports.selectArticles = (
+  filterByTopic,
+  order,
+  sort_by,
+  limit = 10,
+  page = 1
+) => {
   const queryValues = [];
   const validSorts = [
     "created_at",
@@ -65,8 +71,36 @@ exports.selectArticles = (filterByTopic, order, sort_by) => {
     sqlQuery += ` ORDER BY ${sortBy} ${orderBy}`;
   }
 
-  return db.query(sqlQuery, queryValues).then((res) => {
-    return res.rows;
+  const offset = (page - 1) * limit;
+  queryValues.push(limit, offset);
+
+  sqlQuery += ` LIMIT $${queryValues.length - 1} OFFSET $${
+    queryValues.length
+  } `;
+
+  let countQuery = `SELECT COUNT(*) FROM articles`;
+  if (filterByTopic) {
+    countQuery += ` WHERE topic = $1`;
+  }
+
+  const countQueryValues = filterByTopic ? [filterByTopic] : [];
+
+  return Promise.all([
+    db.query(countQuery, countQueryValues),
+    db.query(sqlQuery, queryValues),
+  ]).then(([countResult, articlesResult]) => {
+
+    const total_Count = parseInt(countResult.rows[0].count, 10);
+    const totalPages = Math.ceil(total_Count / limit);
+    
+    if (page > totalPages && total_Count !== 0) {
+      return Promise.reject({ status: 404, msg: "Not Found" });
+    }
+
+    return {
+      articles: articlesResult.rows,
+      total_Count,
+    };
   });
 };
 
