@@ -111,12 +111,12 @@ describe("GET /api/articles/:article_id", () => {
 });
 
 describe("GET /api/articles", () => {
-  it("should when successful respond with a 200 status code and an array of all article objects without the body property present and and a comment_count column", () => {
+  it("should when successful respond with a 200 status code and an array of all article objects without the body property present a comment_count column and results limited to the default of 10", () => {
     return request(app)
       .get("/api/articles")
       .expect(200)
       .then(({ body }) => {
-        expect(body.articles).toHaveLength(13);
+        expect(body.articles).toHaveLength(10);
         body.articles.forEach((article) => {
           expect(article).toMatchObject({
             article_id: expect.any(Number),
@@ -144,7 +144,7 @@ describe("GET /api/articles", () => {
       .get("/api/articles?topic=mitch")
       .expect(200)
       .then(({ body }) => {
-        expect(body.articles).toHaveLength(12);
+        expect(body.articles).toHaveLength(10);
         body.articles.forEach((article) => {
           expect(article.topic).toBe("mitch");
         });
@@ -211,6 +211,73 @@ describe("GET /api/articles", () => {
   it("should respond with 404: Not Found if passed with a topic that does not exist", () => {
     return request(app)
       .get("/api/articles?topic=banana")
+      .expect(404)
+      .then(({ body }) => {
+        expect(body.msg).toBe("Not Found");
+      });
+  });
+  it("should when passed with a limit query, respond with a result limited to the specified amount", () => {
+    return request(app)
+      .get("/api/articles?limit=5")
+      .expect(200)
+      .then(({ body }) => {
+        expect(body.articles).toHaveLength(5);
+      });
+  });
+  it("should when passed a sort_by query of article_id descending, a limit query of 5 and page of 2, respond with an array of article objects, starting at article_id 6 and a length of 5", () => {
+    return request(app)
+      .get("/api/articles?sort_by=article_id&order=asc&limit=5&p=2")
+      .expect(200)
+      .then(({ body }) => {
+        expect(body.articles[0].article_id).toBe(6);
+        expect(body.articles).toHaveLength(5);
+      });
+  });
+  it("should respond with a articles object that contains a total_count property, the value of which should be 13 when no filtering is applied", () => {
+    return request(app)
+      .get("/api/articles")
+      .expect(200)
+      .then(({ body }) => {
+        expect(body.total_Count).toBe(13);
+      });
+  });
+  it("should respond with a articles object that contains a total_count property, the value of which should be 12 when filtered by the topic mitch", () => {
+    return request(app)
+      .get("/api/articles?topic=mitch")
+      .expect(200)
+      .then(({ body }) => {
+        expect(body.articles).toHaveLength(10)
+        expect(body.total_Count).toBe(12);
+      });
+  });
+  it("should respond with a articles object with an empty array and a total count of 0, when filtered by a topic that has no articles", () => {
+    return request(app)
+      .get("/api/articles?topic=paper")
+      .expect(200)
+      .then(({ body }) => {
+        expect(body.articles).toHaveLength(0);
+        expect(body.total_Count).toBe(0);
+      });
+  });
+  it("should respond with 400: Bad Request when passed NaN as a limit query", () => {
+    return request(app)
+      .get("/api/articles?limit=banana")
+      .expect(400)
+      .then(({ body }) => {
+        expect(body.msg).toBe("Bad Request: Invalid Input");
+      });
+  });
+  it("should respond with 400: Bad Request when passed NaN as a page query", () => {
+    return request(app)
+      .get("/api/articles?limit=5&p=banana")
+      .expect(400)
+      .then(({ body }) => {
+        expect(body.msg).toBe("Bad Request: Invalid Input");
+      });
+  });
+  it("should respond with 404: Not Found when passed a page query that does not exist", () => {
+    return request(app)
+      .get("/api/articles?limit=5&p=999999")
       .expect(404)
       .then(({ body }) => {
         expect(body.msg).toBe("Not Found");
@@ -334,7 +401,7 @@ describe("POST /api/articles", () => {
         });
       });
   });
-  it('should when passed a request body that contains a topic the does not exist, respond with a 404: Not Found', () => {
+  it("should when passed a request body that contains a topic the does not exist, respond with a 404: Not Found", () => {
     const input = {
       author: "butter_bridge",
       title: "How to cook an egg",
@@ -348,10 +415,10 @@ describe("POST /api/articles", () => {
       .send(input)
       .expect(404)
       .then(({ body }) => {
-        expect(body.msg).toBe('Not Found')
+        expect(body.msg).toBe("Not Found");
       });
   });
-  it('should respond with 400: Bad Request if passed an article_img_url that is either invalid or not of type .jpg or .png', () => {
+  it("should respond with 400: Bad Request if passed an article_img_url that is either invalid or not of type .jpg or .png", () => {
     const input = {
       author: "butter_bridge",
       title: "How to cook an egg",
@@ -365,7 +432,7 @@ describe("POST /api/articles", () => {
       .send(input)
       .expect(400)
       .then(({ body }) => {
-        expect(body.msg).toBe('Bad Request: Invalid Image Type')
+        expect(body.msg).toBe("Bad Request: Invalid Image Type");
       });
   });
 });
