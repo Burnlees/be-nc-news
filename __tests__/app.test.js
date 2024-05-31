@@ -495,6 +495,61 @@ describe("POST /api/articles", () => {
   });
 });
 
+describe("DELETE /api/articles/:article_id", () => {
+  it("should when successful respond with a 204 status code, and remove the article data entry corresponding to the passed article_id", () => {
+    return request(app)
+      .delete("/api/articles/1")
+      .expect(204)
+      .then(() => {
+        return db
+          .query(`SELECT * FROM articles WHERE article_id = 1`)
+          .then((res) => {
+            expect(res.rows).toHaveLength(0);
+          });
+      });
+  });
+  it("should also removes any comments relating to the deleted article", () => {
+    return request(app)
+      .delete("/api/articles/1")
+      .expect(204)
+      .then(() => {
+        return db
+          .query(`SELECT * FROM comments WHERE article_id = 1`)
+          .then((res) => {
+            expect(res.rows).toHaveLength(0);
+          });
+      });
+  });
+  it('should remove the article data entry corresponding to the passed article_id with no error when there are no comments relating to the article_id', () => {
+    return request(app)
+      .delete("/api/articles/2")
+      .expect(204)
+      .then(() => {
+        return db
+          .query(`SELECT * FROM articles WHERE article_id = 2`)
+          .then((res) => {
+            expect(res.rows).toHaveLength(0);
+          });
+      });
+  });
+  it("should respond with 404: Not Found when passed an article_id that doesnt exist", () => {
+    return request(app)
+      .delete("/api/articles/99999")
+      .expect(404)
+      .then(({ body }) => {
+        expect(body.msg).toBe("Not Found");
+      });
+  });
+  it("should respond with 400: Bad Request when passed NaN as article_id", () => {
+    return request(app)
+      .delete("/api/articles/banana")
+      .expect(400)
+      .then(({ body }) => {
+        expect(body.msg).toBe("Bad Request: Invalid Input");
+      });
+  });
+});
+
 describe("GET /api/articles/:article_id/comments", () => {
   it("should when successful respond with a 200 status code and an array of comments for the given article_id of which each comment should have the following properties: comment_id, votes, created_at, author, body, article_id. The response should have a default length of 10 if no limit query is passed", () => {
     return request(app)
