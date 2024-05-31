@@ -36,6 +36,64 @@ describe("GET /api/topics", () => {
   });
 });
 
+describe("POST /api/topics", () => {
+  it("should when successful respond with a status code of 201, and the newly created topic object", () => {
+    const input = {
+      slug: "pizza",
+      description: "everything pizza",
+    };
+    return request(app)
+      .post("/api/topics")
+      .send(input)
+      .expect(201)
+      .then(({ body }) => {
+        expect(body.topic).toEqual(input);
+      });
+  });
+  it("should respond with 400: Bad Request if passed a post request missing a required field", () => {
+    const input = {
+      description: "everything pizza",
+    };
+    return request(app)
+      .post("/api/topics")
+      .send(input)
+      .expect(400)
+      .then(({ body }) => {
+        expect(body.msg).toBe("Bad Request: Missing Required Field");
+      });
+  });
+  it("should when passed a request object with extra properties, only enter the required ones to the data table", () => {
+    const input = {
+      slug: "pizza",
+      description: "everything pizza",
+      authorized_authors: "butter_bridge",
+    };
+    return request(app)
+      .post("/api/topics")
+      .send(input)
+      .expect(201)
+      .then(({ body }) => {
+        expect(body.topic).toEqual({
+          slug: "pizza",
+          description: "everything pizza",
+        });
+      });
+  });
+  it("should respond with 400: Bad Request when passed a topic that already exists", () => {
+    const input = {
+      slug: "mitch",
+      description: "everything pizza",
+    };
+    return request(app)
+      .post("/api/topics")
+      .send(input)
+      .expect(400)
+      .then(({ body }) => {
+        expect(body.msg).toBe("Bad Request: Already Exists");
+      });
+  });
+});
+
 describe("GET /api", () => {
   it("should respond with a status code of 200 when successful and an object containing information about the available endpoints", () => {
     return request(app)

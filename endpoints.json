@@ -13,6 +13,13 @@
     }
   },
   "GET /api/topics": {
+    "description": "creates a new data entry on the topic data table, and respond with the newly created topic object",
+    "queries": [],
+    "exampleResponse": {
+      "topics": [{ "slug": "football", "description": "Footie!" }]
+    }
+  },
+  "POST /api/topics": {
     "description": "serves an array of all topics",
     "queries": [],
     "exampleResponse": {
