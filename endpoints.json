@@ -80,6 +80,11 @@
       }
     }
   },
+  "DELETE /api/articles/:article_id": {
+    "description": "deletes data entry from the articles data table and any comments relating to it corrosponding to the passed id",
+    "queries": [],
+    "exampleResponse": {}
+  },
   "GET /api/articles/:article_id/comments": {
     "description": "serves an array of comments objects, corresponding to the passed article id",
     "queries": ["limit", "p"],

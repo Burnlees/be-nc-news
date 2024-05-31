@@ -5,6 +5,7 @@ const {
   updateArticleById,
   checkArticleExists,
   createArticle,
+  removeArticle,
 } = require("../models/articles.models");
 const { checkTopicExists } = require("../models/topics.models");
 
@@ -81,4 +82,17 @@ exports.postArticle = (req, res, next) => {
       res.status(201).send({ article: newArticleData });
     })
     .catch(next);
+};
+
+exports.deleteArticleById = (req, res, next) => {
+  const { article_id } = req.params;
+
+  const promises = [checkArticleExists(article_id), removeArticle(article_id)];
+
+  Promise.all(promises)
+    .then(() => {
+      res.status(204).send();
+    })
+    .catch(next);
+
 };
