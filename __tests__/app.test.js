@@ -246,7 +246,7 @@ describe("GET /api/articles", () => {
       .get("/api/articles?topic=mitch")
       .expect(200)
       .then(({ body }) => {
-        expect(body.articles).toHaveLength(10)
+        expect(body.articles).toHaveLength(10);
         expect(body.total_Count).toBe(12);
       });
   });
@@ -438,12 +438,12 @@ describe("POST /api/articles", () => {
 });
 
 describe("GET /api/articles/:article_id/comments", () => {
-  it("should when successful respond with a 200 status code and an array of comments for the given article_id of which each comment should have the following properties: comment_id, votes, created_at, author, body, article_id", () => {
+  it("should when successful respond with a 200 status code and an array of comments for the given article_id of which each comment should have the following properties: comment_id, votes, created_at, author, body, article_id. The response should have a default length of 10 if no limit query is passed", () => {
     return request(app)
       .get("/api/articles/1/comments")
       .expect(200)
       .then(({ body }) => {
-        expect(body.comments).toHaveLength(11);
+        expect(body.comments).toHaveLength(10);
         body.comments.forEach((comment) => {
           expect(comment).toMatchObject({
             comment_id: expect.any(Number),
@@ -470,6 +470,38 @@ describe("GET /api/articles/:article_id/comments", () => {
       .expect(200)
       .then(({ body }) => {
         expect(body.comments).toBeSortedBy("created_at", { descending: true });
+      });
+  });
+  it("should respond with an array of comments with a length of 5 or less when passed with a limit query of 5", () => {
+    return request(app)
+      .get("/api/articles/1/comments?limit=5")
+      .expect(200)
+      .then(({ body }) => {
+        expect(body.comments).toHaveLength(5);
+      });
+  });
+  it("should respond with an array of comments, starting from the 6th newest when passed a limit query of 5 and a page query of 2", () => {
+    return request(app)
+      .get("/api/articles/1/comments?limit=5&p=2")
+      .expect(200)
+      .then(({ body }) => {
+        expect(body.comments[0].created_at).toBe("2020-04-14T20:19:00.000Z");
+      });
+  });
+  it("should respond with 400: Bad Request when passed NaN as a limit query", () => {
+    return request(app)
+      .get("/api/articles/1/comments?limit=banana")
+      .expect(400)
+      .then(({ body }) => {
+        expect(body.msg).toBe("Bad Request: Invalid Input");
+      });
+  });
+  it("should respond with 400: Bad Request when passed NaN as a page query", () => {
+    return request(app)
+      .get("/api/articles/1/comments?limit=5&p=banana")
+      .expect(400)
+      .then(({ body }) => {
+        expect(body.msg).toBe("Bad Request: Invalid Input");
       });
   });
   it("should respond with 404: Not Found when passed an article id that does not exist", () => {
