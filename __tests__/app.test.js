@@ -218,6 +218,158 @@ describe("GET /api/articles", () => {
   });
 });
 
+describe("POST /api/articles", () => {
+  it("should when successful respond with a 201 status code and the newly added article object, the article_img_url should default when not provided", () => {
+    const input = {
+      author: "butter_bridge",
+      title: "How to cook an egg",
+      body: "Fry it!",
+      topic: "mitch",
+    };
+    return request(app)
+      .post("/api/articles")
+      .send(input)
+      .expect(201)
+      .then(({ body }) => {
+        expect(body.article).toMatchObject({
+          article_id: expect.any(Number),
+          author: "butter_bridge",
+          title: "How to cook an egg",
+          body: "Fry it!",
+          topic: "mitch",
+          votes: 0,
+          created_at: expect.any(String),
+          comment_count: 0,
+          article_img_url: expect.any(String),
+        });
+      });
+  });
+  it("should when successful respond with the newly added article object, including the passed avatar_img_url when one is present in the post request", () => {
+    const input = {
+      author: "butter_bridge",
+      title: "How to cook an egg",
+      body: "Fry it!",
+      topic: "mitch",
+      article_img_url:
+        "https://cookieandkate.com/images/2018/09/crispy-fried-egg-recipe.jpg",
+    };
+    return request(app)
+      .post("/api/articles")
+      .send(input)
+      .expect(201)
+      .then(({ body }) => {
+        expect(body.article).toMatchObject({
+          article_id: expect.any(Number),
+          author: "butter_bridge",
+          title: "How to cook an egg",
+          body: "Fry it!",
+          topic: "mitch",
+          votes: 0,
+          created_at: expect.any(String),
+          comment_count: 0,
+          article_img_url:
+            "https://cookieandkate.com/images/2018/09/crispy-fried-egg-recipe.jpg",
+        });
+      });
+  });
+  it("should respond with 400: Bad Request when passed a request body missing required fields", () => {
+    const input = {
+      title: "How to cook an egg",
+      body: "Fry it!",
+      topic: "mitch",
+      article_img_url:
+        "https://cookieandkate.com/images/2018/09/crispy-fried-egg-recipe.jpg",
+    };
+    return request(app)
+      .post("/api/articles")
+      .send(input)
+      .expect(400)
+      .then(({ body }) => {
+        expect(body.msg).toBe("Bad Request: Missing Required Field");
+      });
+  });
+  it("should when passed a request body that contains username that does not exist, respond with 404: Not Found", () => {
+    const input = {
+      author: "bob",
+      title: "How to cook an egg",
+      body: "Fry it!",
+      topic: "mitch",
+      article_img_url:
+        "https://cookieandkate.com/images/2018/09/crispy-fried-egg-recipe.jpg",
+    };
+    return request(app)
+      .post("/api/articles")
+      .send(input)
+      .expect(404)
+      .then(({ body }) => {
+        expect(body.msg).toBe("Not Found: user doesn't exist");
+      });
+  });
+  it("should when passed a request body the contains addtional properties other than the required, add data from the required fields", () => {
+    const input = {
+      author: "butter_bridge",
+      title: "How to cook an egg",
+      body: "Fry it!",
+      topic: "mitch",
+      article_img_url:
+        "https://cookieandkate.com/images/2018/09/crispy-fried-egg-recipe.jpg",
+      votes: 100,
+    };
+    return request(app)
+      .post("/api/articles")
+      .send(input)
+      .expect(201)
+      .then(({ body }) => {
+        expect(body.article).toMatchObject({
+          article_id: expect.any(Number),
+          author: "butter_bridge",
+          title: "How to cook an egg",
+          body: "Fry it!",
+          topic: "mitch",
+          votes: 0,
+          created_at: expect.any(String),
+          comment_count: 0,
+          article_img_url:
+            "https://cookieandkate.com/images/2018/09/crispy-fried-egg-recipe.jpg",
+        });
+      });
+  });
+  it('should when passed a request body that contains a topic the does not exist, respond with a 404: Not Found', () => {
+    const input = {
+      author: "butter_bridge",
+      title: "How to cook an egg",
+      body: "Fry it!",
+      topic: "frying",
+      article_img_url:
+        "https://cookieandkate.com/images/2018/09/crispy-fried-egg-recipe.jpg",
+    };
+    return request(app)
+      .post("/api/articles")
+      .send(input)
+      .expect(404)
+      .then(({ body }) => {
+        expect(body.msg).toBe('Not Found')
+      });
+  });
+  it('should respond with 400: Bad Request if passed an article_img_url that is either invalid or not of type .jpg or .png', () => {
+    const input = {
+      author: "butter_bridge",
+      title: "How to cook an egg",
+      body: "Fry it!",
+      topic: "frying",
+      article_img_url:
+        "cookieandkate.com/images/2018/09/crispy-fried-egg-recipe",
+    };
+    return request(app)
+      .post("/api/articles")
+      .send(input)
+      .expect(400)
+      .then(({ body }) => {
+        expect(body.msg).toBe('Bad Request: Invalid Image Type')
+      });
+  });
+});
+
 describe("GET /api/articles/:article_id/comments", () => {
   it("should when successful respond with a 200 status code and an array of comments for the given article_id of which each comment should have the following properties: comment_id, votes, created_at, author, body, article_id", () => {
     return request(app)

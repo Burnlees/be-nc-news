@@ -3,7 +3,10 @@ const {
   createRef,
   formatComments,
 } = require("../db/seeds/utils");
-const { removePropertyFromObjectArray } = require("../utils/utils");
+const {
+  removePropertyFromObjectArray,
+  checkValidImgType,
+} = require("../utils/utils");
 
 describe("convertTimestampToDate", () => {
   test("returns a new object", () => {
@@ -245,6 +248,43 @@ describe("removePropertyFromObjectArray", () => {
     ];
     const inputTwo = "body";
     const actual = removePropertyFromObjectArray(inputOne, inputTwo);
-    expect(actual).not.toBe(inputOne)
+    expect(actual).not.toBe(inputOne);
+  });
+});
+
+describe("checkValidImgType", () => {
+  it("should respond with false when passed an empty string", () => {
+    const input = "";
+    const expected = false;
+    const actual = checkValidImgType(input);
+    expect(actual).toBe(expected);
+  });
+  it("should return true for strings containing the .jpg image type", () => {
+    const input =
+      "https://cookieandkate.com/images/2018/09/crispy-fried-egg-recipe.jpg";
+    const expected = true;
+    const actual = checkValidImgType(input);
+    expect(actual).toBe(expected);
+  });
+  it("should respond true for strings with the .png image type", () => {
+    const input =
+      "https://cookieandkate.com/images/2018/09/crispy-fried-egg-recipe.png";
+    const expected = true;
+    const actual = checkValidImgType(input);
+    expect(actual).toBe(expected);
+  });
+  it("should respond false for when the string contains both .jpg and .png", () => {
+    const input =
+      "https://cookieandkate.com/images/2018/09/crispy-fried-egg-recipe.png.jpg";
+    const expected = false;
+    const actual = checkValidImgType(input);
+    expect(actual).toBe(expected);
+  });
+  it("should respond false for a string that doesnt contain .jpg or .png", () => {
+    const input =
+      "cookieandkate.com/images/2018/09/crispy-fried-egg-recipe";
+    const expected = false;
+    const actual = checkValidImgType(input);
+    expect(actual).toBe(expected);
   });
 });

@@ -1,5 +1,8 @@
 const db = require("../db/connection");
-const { removePropertyFromObjectArray } = require("../utils/utils");
+const {
+  removePropertyFromObjectArray,
+  checkValidImgType,
+} = require("../utils/utils");
 
 exports.checkArticleExists = (article_id) => {
   return db
@@ -119,6 +122,68 @@ exports.updateArticleById = (article_id, votes) => {
     `,
       [votes, article_id]
     )
+    .then((res) => {
+      return res.rows[0];
+    });
+};
+
+exports.createArticle = (newArticle) => {
+  const queryValues = [
+    newArticle.author,
+    newArticle.title,
+    newArticle.body,
+    newArticle.topic,
+  ];
+
+  if (newArticle.article_img_url) {
+    if (!checkValidImgType(newArticle.article_img_url)) {
+      return Promise.reject({
+        status: 400,
+        msg: "Bad Request: Invalid Image Type",
+      });
+    }
+  }
+
+  let sqlQuery = `
+  INSERT INTO articles
+  (author, title, body, topic`;
+
+  if (newArticle.article_img_url) {
+    queryValues.push(newArticle.article_img_url);
+    sqlQuery += `, article_img_url)`;
+  } else {
+    sqlQuery += `)`;
+  }
+
+  sqlQuery += ` VALUES
+  ($1, $2, $3, $4`;
+
+  if (newArticle.article_img_url) {
+    sqlQuery += `, $5)`;
+  } else {
+    sqlQuery += `)`;
+  }
+
+  sqlQuery += ` RETURNING *`;
+
+  return db
+    .query(sqlQuery, queryValues)
+    .then((res) => {
+      const { article_id } = res.rows[0];
+      return db.query(
+        `
+    SELECT a.*, COALESCE(c.comment_count, 0) AS comment_count
+    FROM articles a
+    LEFT JOIN (
+    SELECT article_id, COUNT(*)::int AS comment_count
+    FROM comments
+    GROUP BY article_id) 
+    c ON a.article_id = c.article_id
+    WHERE a.article_id = $1;
+    `,
+        [article_id]
+      );
+    })
     .then((res) => {
       return res.rows[0];
     });
