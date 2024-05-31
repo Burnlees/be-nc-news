@@ -19,3 +19,16 @@ exports.checkTopicExists = (topic) => {
       }
     });
 };
+
+exports.createTopic = (topicData) => {
+  return db.query(
+    `
+    INSERT INTO topics
+    (slug, description)
+    VALUES
+    ($1, $2)
+    RETURNING *
+    `, [topicData.slug, topicData.description]).then((res) => {
+      return res.rows[0]
+    })
+}
