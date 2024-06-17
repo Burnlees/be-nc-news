@@ -18,8 +18,10 @@ const {
   deleteCommentById,
 } = require("./controllers/comments.controller");
 const apiRouter = require("./routes/api-router");
+const cors = require('cors');
 
 const app = express();
+app.use(cors())
 app.use(express.json());
 
 app.use("/api", apiRouter);
